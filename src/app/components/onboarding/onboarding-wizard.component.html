@@ -1,0 +1,158 @@
+<h2 mat-dialog-title class="onboarding-title">Welcome to GNS3</h2>
+
+<mat-dialog-content class="onboarding-content">
+  <mat-stepper [linear]="false" #stepper orientation="horizontal">
+
+    <!-- Step 1: Welcome -->
+    <mat-step label="Welcome">
+      <div class="step-body">
+        <mat-icon class="step-icon">rocket_launch</mat-icon>
+        <h3>Welcome to GNS3!</h3>
+        <p>
+          GNS3 is a powerful network simulation platform that lets you design, build, and
+          test complex network topologies using real device images and virtual machines.
+        </p>
+        <p>
+          This short wizard will walk you through the key concepts to get up and running.
+          You can skip any step or come back later.
+        </p>
+      </div>
+      <div class="step-actions">
+        <button mat-raised-button color="primary" matStepperNext>Get Started</button>
+        <button mat-button (click)="close()">Skip setup</button>
+      </div>
+    </mat-step>
+
+    <!-- Step 2: Configure Compute Servers -->
+    <mat-step label="Compute Servers">
+      <div class="step-body">
+        <mat-icon class="step-icon">dns</mat-icon>
+        <h3>Configure Compute Servers</h3>
+        <p>
+          GNS3 uses <strong>compute servers</strong> to run your network devices. By default,
+          your local machine acts as the compute. You can also add remote compute servers to
+          distribute the processing load across multiple hosts.
+        </p>
+        <p>
+          Navigate to <strong>Management → Computes</strong> to view and add compute nodes.
+        </p>
+      </div>
+      <div class="step-actions">
+        <button mat-raised-button color="primary" (click)="navigateTo('management/computes')">
+          <mat-icon>open_in_new</mat-icon> Go to Computes
+        </button>
+        <button mat-button matStepperPrevious>Back</button>
+        <button mat-button matStepperNext>Next</button>
+        <button mat-button (click)="close()">Skip setup</button>
+      </div>
+    </mat-step>
+
+    <!-- Step 3: Install Appliances & Images -->
+    <mat-step label="Appliances & Images">
+      <div class="step-body">
+        <mat-icon class="step-icon">inventory_2</mat-icon>
+        <h3>Install Appliances &amp; Images</h3>
+        <p>
+          <strong>Appliances</strong> are pre-configured device definitions (routers, switches,
+          firewalls, etc.). To use them you'll need the corresponding disk images — these are
+          usually vendor-provided QEMU, IOS, or Docker images.
+        </p>
+        <p>
+          Use the <strong>Image Manager</strong> to upload and manage your images, then install
+          appliances from the GNS3 marketplace or import your own <code>.gns3a</code> file.
+        </p>
+      </div>
+      <div class="step-actions">
+        <button mat-raised-button color="primary" (click)="navigateTo('images')">
+          <mat-icon>open_in_new</mat-icon> Go to Image Manager
+        </button>
+        <button mat-button matStepperPrevious>Back</button>
+        <button mat-button matStepperNext>Next</button>
+        <button mat-button (click)="close()">Skip setup</button>
+      </div>
+    </mat-step>
+
+    <!-- Step 4: Install Templates -->
+    <mat-step label="Templates">
+      <div class="step-body">
+        <mat-icon class="step-icon">widgets</mat-icon>
+        <h3>Install Templates</h3>
+        <p>
+          <strong>Templates</strong> are reusable device configurations that appear in your
+          device palette when building a topology. Each template is linked to a specific image
+          and compute.
+        </p>
+        <p>
+          Go to <strong>Management → Templates</strong> to see installed templates, or use
+          <em>File → Add a template</em> inside a project to install a new appliance from the
+          GNS3 marketplace.
+        </p>
+      </div>
+      <div class="step-actions">
+        <button mat-raised-button color="primary" (click)="navigateTo('management/templates')">
+          <mat-icon>open_in_new</mat-icon> Go to Templates
+        </button>
+        <button mat-button matStepperPrevious>Back</button>
+        <button mat-button matStepperNext>Next</button>
+        <button mat-button (click)="close()">Skip setup</button>
+      </div>
+    </mat-step>
+
+    <!-- Step 5: Create First Project -->
+    <mat-step label="First Project">
+      <div class="step-body">
+        <mat-icon class="step-icon">folder_open</mat-icon>
+        <h3>Create Your First Project</h3>
+        <p>
+          Everything in GNS3 lives inside a <strong>project</strong>. A project holds your
+          network topology, device configurations, and saved state.
+        </p>
+        <p>
+          Click <strong>Projects</strong> in the navigation to see your existing projects or
+          create a new one using the <strong>+ New Project</strong> button.
+        </p>
+      </div>
+      <div class="step-actions">
+        <button mat-raised-button color="primary" (click)="navigateTo('projects')">
+          <mat-icon>open_in_new</mat-icon> Go to Projects
+        </button>
+        <button mat-button matStepperPrevious>Back</button>
+        <button mat-button matStepperNext>Next</button>
+        <button mat-button (click)="close()">Skip setup</button>
+      </div>
+    </mat-step>
+
+    <!-- Step 6: Opening Consoles -->
+    <mat-step label="Consoles">
+      <div class="step-body">
+        <mat-icon class="step-icon">terminal</mat-icon>
+        <h3>Opening Device Consoles</h3>
+        <p>
+          Once your topology is running, you can access device consoles to configure them.
+          Simply <strong>right-click a node</strong> in the canvas and select
+          <em>Console</em> (or <em>Auxiliary Console</em>).
+        </p>
+        <p>
+          GNS3 supports multiple console types depending on the device:
+        </p>
+        <ul>
+          <li><strong>Telnet</strong> — for routers, switches, and most VMs</li>
+          <li><strong>VNC</strong> — for graphical desktop VMs</li>
+          <li><strong>SPICE</strong> — for QEMU VMs with enhanced graphics</li>
+          <li><strong>HTTP/HTTPS</strong> — for web-managed devices</li>
+        </ul>
+        <p>
+          You can also open all consoles at once via <em>Tools → Console → Open all consoles</em>.
+        </p>
+      </div>
+      <div class="step-actions">
+        <button mat-raised-button color="primary" (click)="close()">
+          <mat-icon>check_circle</mat-icon> Done — Start using GNS3
+        </button>
+        <button mat-button matStepperPrevious>Back</button>
+        <button mat-button (click)="close()">Skip setup</button>
+      </div>
+    </mat-step>
+
+  </mat-stepper>
+</mat-dialog-content>

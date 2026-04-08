@@ -153,6 +153,7 @@ import { LogConsoleComponent } from '@components/project-map/log-console/log-con
 import { LogEventsDataSource } from '@components/project-map/log-console/log-events-datasource';
 import { ApplianceInfoDialogComponent } from '@components/project-map/new-template-dialog/appliance-info-dialog/appliance-info-dialog.component';
 import { NewTemplateDialogComponent } from '@components/project-map/new-template-dialog/new-template-dialog.component';
+import { OnboardingWizardComponent } from '@components/onboarding/onboarding-wizard.component';
 import { TemplateNameDialogComponent } from '@components/project-map/new-template-dialog/template-name-dialog/template-name-dialog.component';
 import { ConfigEditorDialogComponent } from '@components/project-map/node-editors/config-editor/config-editor.component';
 import { ConfiguratorDialogAtmSwitchComponent } from '@components/project-map/node-editors/configurator/atm_switch/configurator-atm-switch.component';
@@ -524,6 +525,7 @@ import { GlobalUploadIndicatorComponent } from '@components/global-upload-indica
         HttpConsoleNewTabActionComponent,
         WebConsoleFullWindowComponent,
         NewTemplateDialogComponent,
+        OnboardingWizardComponent,
         ChangeHostnameActionComponent,
         ChangeHostnameDialogComponent,
         ApplianceInfoDialogComponent,

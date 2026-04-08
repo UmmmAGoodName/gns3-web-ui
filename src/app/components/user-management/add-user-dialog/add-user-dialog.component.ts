@@ -62,7 +62,8 @@ export class AddUserDialogComponent implements OnInit {
         [Validators.required, Validators.minLength(6), Validators.maxLength(100)]),
       confirmPassword: new UntypedFormControl(null,
         [Validators.minLength(6), Validators.maxLength(100), Validators.required] ),
-      is_active: new UntypedFormControl(true)
+      is_active: new UntypedFormControl(true),
+      show_onboarding: new UntypedFormControl(true)
     },{
       validators: [matchingPassword]
     });

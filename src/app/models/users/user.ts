@@ -5,6 +5,7 @@ export interface User {
     last_login: string;
     is_active: boolean;
     is_superadmin: boolean;
+    show_onboarding: boolean;
     updated_at: string;
     user_id: string;
     username: string;
