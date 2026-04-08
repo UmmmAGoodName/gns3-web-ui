@@ -5,15 +5,12 @@ import { ProjectService } from '@services/project.service';
 import { Subscription } from 'rxjs';
 import { ProgressService } from '../../common/progress/progress.service';
 import { NewTemplateDialogComponent } from '@components/project-map/new-template-dialog/new-template-dialog.component';
-import { OnboardingWizardComponent } from '@components/onboarding/onboarding-wizard.component';
 import { Controller } from '@models/controller';
 import { Project } from '@models/project';
-import { User } from '@models/users/user';
 import { ControllerManagementService } from '@services/controller-management.service';
 import { ControllerService } from '@services/controller.service';
 import { RecentlyOpenedProjectService } from '@services/recentlyOpenedProject.service';
 import { ToasterService } from '@services/toaster.service';
-import { UserService } from '@services/user.service';
 import { version } from '../../version';
 
 @Component({
@@ -38,7 +35,6 @@ export class DefaultLayoutComponent implements OnInit, OnDestroy {
   public controller: Controller;
   public project: Project;
   private projectMapSubscription: Subscription = new Subscription();
-  private onboardingChecked = new Set<string>();
 
   constructor(
     private recentlyOpenedProjectService: RecentlyOpenedProjectService,
@@ -49,8 +45,7 @@ export class DefaultLayoutComponent implements OnInit, OnDestroy {
     public router: Router,
     private route: ActivatedRoute,
     private controllerService: ControllerService,
-    private projectService: ProjectService,
-    private userService: UserService
+    private projectService: ProjectService
   ) {
     this.router.events.subscribe((data) => {
       if (data instanceof NavigationEnd) {
@@ -139,29 +134,10 @@ export class DefaultLayoutComponent implements OnInit, OnDestroy {
     window.close();
     return false;
   }
+
   getData() {
     this.controllerService.get(+this.controllerId).then((controller: Controller) => {
       this.controller = controller;
-      this.checkOnboarding(controller);
-    });
-  }
-
-  private checkOnboarding(controller: Controller) {
-    if (!controller.authToken || this.onboardingChecked.has(String(controller.id))) {
-      return;
-    }
-    this.onboardingChecked.add(String(controller.id));
-    this.userService.getInformationAboutLoggedUser(controller).subscribe((user: User) => {
-      if (user.show_onboarding) {
-        const dialogRef = this.dialog.open(OnboardingWizardComponent, {
-          width: '750px',
-          disableClose: false,
-          data: { controller },
-        });
-        dialogRef.afterClosed().subscribe(() => {
-          this.userService.update(controller, { show_onboarding: false }, true).subscribe();
-        });
-      }
     });
   }
 

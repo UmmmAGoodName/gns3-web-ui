@@ -5,15 +5,18 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSort, MatSortable } from '@angular/material/sort';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ExportPortableProjectComponent } from '@components/export-portable-project/export-portable-project.component';
+import { OnboardingWizardComponent } from '@components/onboarding/onboarding-wizard.component';
 import { BehaviorSubject, merge, Observable } from 'rxjs';
 import { map } from 'rxjs//operators';
 import { ProgressService } from '../../common/progress/progress.service';
 import { Project } from '@models/project';
 import { Controller } from '@models/controller';
+import { User } from '@models/users/user';
 import { ProjectService } from '@services/project.service';
 import { RecentlyOpenedProjectService } from '@services/recentlyOpenedProject.service';
 import { Settings, SettingsService } from '@services/settings.service';
 import { ToasterService } from '@services/toaster.service';
+import { UserService } from '@services/user.service';
 import { AddBlankProjectDialogComponent } from './add-blank-project-dialog/add-blank-project-dialog.component';
 import { ChooseNameDialogComponent } from './choose-name-dialog/choose-name-dialog.component';
 import { ConfirmationBottomSheetComponent } from './confirmation-bottomsheet/confirmation-bottomsheet.component';
@@ -36,6 +39,7 @@ export class ProjectsComponent implements OnInit {
   searchText: string = '';
   isAllDelete: boolean = false;
   selection = new SelectionModel(true, []);
+  private onboardingShown = false;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 
@@ -48,7 +52,8 @@ export class ProjectsComponent implements OnInit {
     private router: Router,
     private bottomSheet: MatBottomSheet,
     private toasterService: ToasterService,
-    private recentlyOpenedProjectService: RecentlyOpenedProjectService
+    private recentlyOpenedProjectService: RecentlyOpenedProjectService,
+    private userService: UserService
   ) {}
 
   ngOnInit() {
@@ -65,6 +70,24 @@ export class ProjectsComponent implements OnInit {
     this.settings = this.settingsService.getAll();
 
     this.projectService.projectListSubject.subscribe(() => this.refresh());
+    this.checkOnboarding();
+  }
+
+  private checkOnboarding(): void {
+    if (this.onboardingShown) return;
+    this.onboardingShown = true;
+    this.userService.getInformationAboutLoggedUser(this.controller).subscribe((user: User) => {
+      if (user.show_onboarding) {
+        const dialogRef = this.dialog.open(OnboardingWizardComponent, {
+          width: '750px',
+          disableClose: false,
+          data: { controller: this.controller },
+        });
+        dialogRef.afterClosed().subscribe(() => {
+          this.userService.update(this.controller, { show_onboarding: false }, true).subscribe();
+        });
+      }
+    });
   }
 
   refresh() {
