@@ -102,13 +102,11 @@ export class NewTemplateDialogComponent implements OnInit {
 
   ngOnInit() {
     this.applianceService.getAppliances(this.controller).subscribe((appliances) => {
-      this.appliances = appliances;
-      this.appliances.forEach((appliance) => {
-        if (appliance.docker) appliance.emulator = 'Docker';
-        if (appliance.dynamips) appliance.emulator = 'Dynamips';
-        if (appliance.iou) appliance.emulator = 'Iou';
-        if (appliance.qemu) appliance.emulator = 'Qemu';
+      appliances.forEach((appliance) => {
+        const key = ['docker', 'dynamips', 'iou', 'qemu'].find((k) => appliance[k]);
+        if (key) appliance.emulator = key.charAt(0).toUpperCase() + key.slice(1);
       });
+      this.appliances = appliances;
       this.allAppliances = appliances;
       this.dataSource = new MatTableDataSource(this.allAppliances);
       this.dataSource.paginator = this.paginator;
@@ -134,19 +132,6 @@ export class NewTemplateDialogComponent implements OnInit {
 
     this.iouService.getImages(this.controller).subscribe((iouImages) => {
       this.iouImages = iouImages;
-    });
-
-    this.applianceService.getAppliances(this.controller).subscribe((appliances) => {
-      this.appliances = appliances;
-      this.appliances.forEach((appliance) => {
-        if (appliance.docker) appliance.emulator = 'Docker';
-        if (appliance.dynamips) appliance.emulator = 'Dynamips';
-        if (appliance.iou) appliance.emulator = 'Iou';
-        if (appliance.qemu) appliance.emulator = 'Qemu';
-      });
-      this.allAppliances = appliances;
-      this.dataSource = new MatTableDataSource(this.allAppliances);
-      this.dataSource.paginator = this.paginator;
     });
 
     this.uploader = new FileUploader({url: ''});
@@ -261,10 +246,7 @@ export class NewTemplateDialogComponent implements OnInit {
     fileReader.onloadend = () => {
       let appliance = JSON.parse(fileReader.result as string);
 
-      if (appliance.docker) emulator = 'docker';
-      if (appliance.dynamips) emulator = 'dynamips';
-      if (appliance.iou) emulator = 'iou';
-      if (appliance.qemu) emulator = 'qemu';
+      emulator = ['docker', 'dynamips', 'iou', 'qemu'].find((k) => appliance[k]) || emulator;
 
       const url = this.applianceService.getUploadPath(this.controller, fileName);
       this.uploader.queue.forEach((elem) => (elem.url = url));
@@ -283,23 +265,18 @@ export class NewTemplateDialogComponent implements OnInit {
       return item.name.toLowerCase().includes(this.searchText.toLowerCase());
     });
 
-    if (this.category === 'all categories' || !this.category) {
-      this.appliances = temporaryAppliances;
-    } else {
-      this.appliances = temporaryAppliances.filter((t) => t.category === this.category);
-    }
+    this.appliances = (!this.category || this.category === 'all categories')
+      ? temporaryAppliances
+      : temporaryAppliances.filter((t) => t.category === this.category);
 
     this.dataSource = new MatTableDataSource(this.appliances);
     this.dataSource.paginator = this.paginator;
   }
 
   setAction(action: string) {
+    const titles = { install: 'Install appliance from controller', import: 'Import an appliance file' };
     this.action = action;
-    if (action === 'install') {
-      this.actionTitle = 'Install appliance from controller';
-    } else if (action === 'import') {
-      this.actionTitle = 'Import an appliance file';
-    }
+    if (titles[action]) this.actionTitle = titles[action];
   }
 
   setControllerType(controllerType: string) {
@@ -377,9 +354,7 @@ export class NewTemplateDialogComponent implements OnInit {
     let emulator;
 
     fileReader.onloadend = () => {
-      if (this.applianceToInstall.qemu) emulator = 'qemu';
-      if (this.applianceToInstall.dynamips) emulator = 'dynamips';
-      if (this.applianceToInstall.iou) emulator = 'iou';
+      emulator = ['qemu', 'dynamips', 'iou'].find((k) => this.applianceToInstall[k]) || emulator;
 
       const url = this.applianceService.getUploadPath(this.controller, imageName);
       this.uploaderImage.queue.forEach((elem) => (elem.url = url));
@@ -390,7 +365,6 @@ export class NewTemplateDialogComponent implements OnInit {
       this.uploaderImage.uploadItem(itemToUpload);
     };
 
-    //fileReader.readAsText(file); //web browser out ouf memory when upload large image file
     fileReader.onloadend(undefined);
   }
 
@@ -403,16 +377,10 @@ export class NewTemplateDialogComponent implements OnInit {
   }
 
   checkImageFromVersion(image: string): boolean {
-    let imageToInstall = this.applianceToInstall.images.filter((n) => n.filename === image)[0];
-    if (this.applianceToInstall.qemu) {
-      if (this.qemuImages.filter((n) => n.checksum === imageToInstall.md5sum).length > 0) return true;
-    } else if (this.applianceToInstall.dynamips) {
-      if (this.iosImages.filter((n) => n.checksum === imageToInstall.md5sum).length > 0) return true;
-    } else if (this.applianceToInstall.iou) {
-      if (this.iouImages.filter((n) => n.checksum === imageToInstall.md5sum).length > 0) return true;
-    }
-
-    return false;
+    const imageToInstall = this.applianceToInstall.images.find((n) => n.filename === image);
+    const app = this.applianceToInstall;
+    const images = app.qemu ? this.qemuImages : app.dynamips ? this.iosImages : app.iou ? this.iouImages : [];
+    return images.some((n) => n.checksum === imageToInstall.md5sum);
   }
 
   openConfirmationDialog(message: string, link: string) {
@@ -501,8 +469,6 @@ export class NewTemplateDialogComponent implements OnInit {
           this.toasterService.success('Template added');
           this.dialogRef.close();
         });
-      } else {
-        return false;
       }
     });
   }
@@ -557,8 +523,6 @@ export class NewTemplateDialogComponent implements OnInit {
           this.toasterService.success('Template added');
           this.dialogRef.close();
         });
-      } else {
-        return false;
       }
     });
   }
@@ -594,8 +558,6 @@ export class NewTemplateDialogComponent implements OnInit {
           this.toasterService.success('Template added');
           this.dialogRef.close();
         });
-      } else {
-        return false;
       }
     });
   }
@@ -659,8 +621,6 @@ export class NewTemplateDialogComponent implements OnInit {
           this.toasterService.success('Template added');
           this.dialogRef.close();
         });
-      } else {
-        return false;
       }
     });
   }

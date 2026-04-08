@@ -91,9 +91,7 @@ export class AiChatComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnInit() {
     // Initialize theme
-    this.themeService.getActualTheme() === 'light'
-      ? (this.isLightThemeEnabled = true)
-      : (this.isLightThemeEnabled = false);
+    this.isLightThemeEnabled = this.themeService.getActualTheme() === 'light';
 
     // Set top offset to keep AI Chat below toolbar (64px for desktop, 56px for mobile)
     const toolbarHeight = window.innerWidth <= 768 ? 56 : 64;
