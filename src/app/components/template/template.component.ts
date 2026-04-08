@@ -2,12 +2,14 @@ import { OverlayContainer } from '@angular/cdk/overlay';
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ThemeService } from '@services/theme.service';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { Project } from '@models/project';
 import { Controller } from '@models/controller';
 import { Template } from '@models/template';
+import { Compute } from '@models/compute';
 import { SymbolService } from '@services/symbol.service';
 import { TemplateService } from '@services/template.service';
+import { ComputeService } from '@services/compute.service';
 import { NodeAddedEvent, TemplateListDialogComponent } from './template-list-dialog/template-list-dialog.component';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Context } from '../../cartography/models/context';
@@ -47,9 +49,12 @@ export class TemplateComponent implements OnInit, OnDestroy {
   private themeSubscription: Subscription;
   private isLightThemeEnabled: boolean = false;
 
+  private supportedNodeTypes: Set<string> = new Set();
+
   constructor(
     private dialog: MatDialog,
     private templateService: TemplateService,
+    private computeService: ComputeService,
     private symbolService: SymbolService,
     private domSanitizer: DomSanitizer,
     private themeService: ThemeService,
@@ -62,12 +67,18 @@ export class TemplateComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscription = this.templateService.newTemplateCreated.subscribe((template: Template) => {
       this.templates.push(template);
+      this.filterTemplates(null);
     });
 
-    this.templateService.list(this.controller).subscribe((listOfTemplates: Template[]) => {
-      this.filteredTemplates = listOfTemplates;
+    forkJoin({
+      templates: this.templateService.list(this.controller),
+      computes: this.computeService.getComputes(this.controller),
+    }).subscribe(({ templates, computes }) => {
+      this.supportedNodeTypes = this.buildSupportedNodeTypes(computes);
+      const supported = templates.filter((t) => this.isTemplateSupported(t));
+      this.filteredTemplates = supported;
+      this.templates = supported;
       this.sortTemplates();
-      this.templates = listOfTemplates;
     });
     this.symbolService.list(this.controller);
     if (this.themeService.getActualTheme()  === 'light') this.isLightThemeEnabled = true;
@@ -104,6 +115,20 @@ export class TemplateComponent implements OnInit, OnDestroy {
       this.filteredTemplates = temporaryTemplates.filter((t) => t.template_type === this.selectedType);
     }
     this.sortTemplates();
+  }
+
+  private buildSupportedNodeTypes(computes: Compute[]): Set<string> {
+    const types = new Set<string>();
+    computes.forEach((compute) => {
+      (compute.capabilities?.node_types ?? []).forEach((t) => types.add(t));
+    });
+    return types;
+  }
+
+  private isTemplateSupported(template: Template): boolean {
+    // If we have no capability data at all, show everything (conservative).
+    if (this.supportedNodeTypes.size === 0) return true;
+    return this.supportedNodeTypes.has(template.node_type);
   }
 
   dragStart(ev) {
